@@ -1,12 +1,7 @@
-import React from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
-import Web3 from 'web3';
-import TokenAbi from "./ABI/Token_Abi.json";
-import TokenAbi1 from "./ABI/Token_Abi1.json";
+import React from 'react'
 
-const Wallet = () => {
-    let web3;
+const Event = () => {
+  let web3;
     const { ethereum } = window
     web3 = new Web3(ethereum)
     
@@ -17,31 +12,30 @@ const Wallet = () => {
     const [showAddress, setAddress] = useState(null);
     const [showBalance, setBalance] = useState(null);
     const [buttonConnection, setButtonConnection] = useState("Connect");
-	const [tokenName, setTokenName] = useState("Token");
+	  const [tokenName, setTokenName] = useState("Token");
     const [tokenBalance, setTokenBalance] = useState(null);
-	const [contract, setContract] = useState(null);
+	  const [contract, setContract] = useState(null);
     const [option, setOption] = useState("");
     const [hash, setHash] = useState(null);
     const [network, setNetwork] = useState("");
     const [metaMaskNetwork, setMetaMaskNetwork] = useState("");
     const [errorr, setErrorr] = useState();
-    const [recipientAddresss, setRecipientAddress] = useState("");
 
 
     const connectMetamask = async () => {
         console.log("web3",web3);
         console.log(window.ethereum.chainId,ethereum.selectedAddress, 'window.ethereum.networkVersion');
         
-        // if(metaMaskNetwork===""){
-        //     alert("choose network")
-        //     return
-        // }
+        if(metaMaskNetwork===""){
+            alert("choose network")
+            return
+        }
 
-        if(window.ethereum.networkVersion===1)
+        if(window.ethereum.networkVersion==1)
         {
          setNetwork("Mainnet")
         }
-        else if(window.ethereum.networkVersion===3)
+        else if(window.ethereum.networkVersion==3)
         {
             setNetwork("Ropsten")
         }
@@ -159,64 +153,18 @@ const Wallet = () => {
         }
     }
 
-    const transferFrom = async(e) => {
-        if(buttonConnection === "Wallet Connected"){
-
-            console.log("HIT");
-            e.preventDefault(); //prevent page reloading
-
-            let contract1 = new web3.eth.Contract(TokenAbi1,TokenAddress2);
-            let senderaddress = e.target.senderAdd.value;
-            let recipientAddress = e.target.recipientAddress.value;
-            let amount = e.target.amount.value*10**18;
-            let amt = amount.toString();
-    
-            try {
-                console.log("TRY");
-                await contract1.methods.transferFrom(senderaddress,recipientAddress,amt).send({from: senderaddress}).then((r)=>{
-                    console.log("res",r)
-                    setHash(r.blockHash);
-                })
-            } catch(err){
-                console.log(err)
-            }
-        } else {
-            alert("Please connect Wallet First")
-        }
-    }
-
-    const approveTransc = async(e) => {
-
-        e.preventDefault(); //prevent page reloading
-
-        let contract1 = new web3.eth.Contract(TokenAbi1,TokenAddress2);
-    
-        let recipientAddress = e.target.recipientAddress.value;
-        setRecipientAddress(recipientAddress);
-        let amount = e.target.amount.value*10**18;
-        let amt = amount.toString();
-        try {
-            await contract1.methods.approve(recipientAddress,amt).send({
-                from:address
-            })
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
 console.log(network,"qqqqqqqqqqqqqqqqqq");
-
   return (
     <div>
         <h1>WEB3 Integration</h1>
-        {/* <select 
+        <select 
         name="Choose"
         onChange={(e)=>setMetaMaskNetwork(e.target.value)}>
             <option value="">select</option>
             <option value="Mainnet">Mainnet</option>
             <option value="Testnet">Testnet</option>
 
-        </select><br/><br/> */}
+        </select><br/><br/>
         <button onClick ={connectMetamask}>{buttonConnection}</button><br/><br/>
         {buttonConnection === "Wallet Connected" ?
         network === "Ropsten testnet" || network === "Mainnet"  ? network : <button onClick={changeNetwork}>{errorr}</button> 
@@ -224,31 +172,7 @@ console.log(network,"qqqqqqqqqqqqqqqqqq");
         <h4>Wallet Address : {showAddress}</h4>
         <h4>Balance: {showBalance}</h4>
 		<h4> {tokenName + " Balance"}: {tokenBalance} </h4>
-        <br/><br/>
-        
-        <form onSubmit={approveTransc}>
-            <h4>Allow Recipient address to transact on my behalf </h4>
-            <label>Enter the Recipient Address: </label>
-            <input type="text" id='recipientAddress' placeholder='Enter Address'></input><br/><br/>
-            <label>Enter Amount: </label>
-            <input type="number" id="amount" placeholder='Enter Amount'></input><br/><br/>
-            <button type='submit'>Approve</button>
-        </form>
-        <br/><br/>
-
-        <form onSubmit={transferFrom}>
-            <h3>Transfer Functionality</h3>
-            <label>Enter sender Address: </label>
-            <input type="text" id="senderAdd" placeholder='Sender Address' /><br/><br/>
-            <label>Enter the Recipient Address: </label>
-            <input type="text" id='recipientAddress' placeholder='Recipient Address'></input><br/><br/>
-            <label>Enter Amount: </label>
-            <input type="number" id="amount" placeholder='Enter Amount'></input><br/><br/>
-            <button type='submit'>Transfer</button>
-        </form>
-        <br/><br/>
- 
-        <h1> {option}</h1>
+        <h1>Transfer {option}</h1>
         <select 
         name="Choose"
         onChange={(e)=>setOption(e.target.value)}>
@@ -256,11 +180,7 @@ console.log(network,"qqqqqqqqqqqqqqqqqq");
             <option value="Token">Token</option>
             <option value="Ethereum">Ethereum</option>
 
-        </select><br/><br/>
-        {/* <button onClick={approveTransc}>Approve</button> */}
-
-
-
+        </select>
             <form onSubmit={transferEthToken}>
 						<p> Reciever Address </p>
 						<input type='text' id='recieverAddress'/>
@@ -273,5 +193,7 @@ console.log(network,"qqqqqqqqqqqqqqqqqq");
 			</form>
     </div>
   )
+
 }
-export default Wallet
+
+export default Event

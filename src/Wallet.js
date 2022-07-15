@@ -10,7 +10,7 @@ const Wallet = () => {
     const { ethereum } = window
     web3 = new Web3(ethereum)
     
-    const address = "0xdb126a7CF1a62F76A66AD3EA13bfc6EEDaA4576F";
+    const address = "0x765ae9DdF72b5614Db50E6DEd2c4706114141f4d";
     const TokenAddress1 = "0x995765e120676263764aB14781Abe228a7EDd015";
     const TokenAddress2 = "0xB8B1fF9d62eb8dcbB98bC7B8D006b8f5F873f5a3";
 
@@ -72,10 +72,9 @@ const Wallet = () => {
 
         setButtonConnection("Wallet Connected");
         console.log("accounts",accounts);
-        setAddress(accounts)
-        
+        setAddress(accounts[0])
         console.log('What chain: ', window.ethereum.chainId);
-    
+        console.log(showAddress,"qqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
 
         const balance = await web3.eth.getBalance(accounts[0]);
         console.log("balance",balance/10**18);
@@ -137,7 +136,7 @@ const Wallet = () => {
 
         if(option==="Ethereum"){
             try {
-                    await web3.eth.sendTransaction({from: address, to: recieverAddress, value: transferAmount}).then((res)=>{
+                    await web3.eth.sendTransaction({from: showAddress, to: recieverAddress, value: transferAmount}).then((res)=>{
                         console.log(res,"res");
                         setHash(res.blockHash)
                       })
@@ -147,7 +146,7 @@ const Wallet = () => {
         }else if(option==="Token"){
             try {
                 console.log("asdfgh",typeof(transferAmount),recieverAddress)
-                    await contract1.methods.transfer(recieverAddress,tranfer_amt).send({from: address}).then((r)=>{
+                    await contract1.methods.transfer(recieverAddress,tranfer_amt).send({from: showAddress}).then((r)=>{
                         console.log("res",r)
                         setHash(r.blockHash);
                     })
@@ -170,10 +169,10 @@ const Wallet = () => {
             let recipientAddress = e.target.recipientAddress.value;
             let amount = e.target.amount.value*10**18;
             let amt = amount.toString();
-    
+            console.log(showAddress,"aaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             try {
                 console.log("TRY");
-                await contract1.methods.transferFrom(senderaddress,recipientAddress,amt).send({from: senderaddress}).then((r)=>{
+                await contract1.methods.transferFrom(senderaddress,recipientAddress,amt).send({from: showAddress}).then((r)=>{
                     console.log("res",r)
                     setHash(r.blockHash);
                 })
@@ -186,25 +185,29 @@ const Wallet = () => {
     }
 
     const approveTransc = async(e) => {
+        if(buttonConnection === "Wallet Connected"){
 
-        e.preventDefault(); //prevent page reloading
-
-        let contract1 = new web3.eth.Contract(TokenAbi1,TokenAddress2);
+            e.preventDefault(); //prevent page reloading
     
-        let recipientAddress = e.target.recipientAddress.value;
-        setRecipientAddress(recipientAddress);
-        let amount = e.target.amount.value*10**18;
-        let amt = amount.toString();
-        try {
-            await contract1.methods.approve(recipientAddress,amt).send({
-                from:address
-            })
-        } catch (error) {
-            console.log(error);
+            let contract1 = new web3.eth.Contract(TokenAbi1,TokenAddress2);
+        
+            let recipientAddress = e.target.recipientAddress.value;
+            setRecipientAddress(recipientAddress);
+            let amount = e.target.amount.value*10**18;
+            let amt = amount.toString();
+            try {
+                await contract1.methods.approve(recipientAddress,amt).send({
+                    from: showAddress
+                })
+            } catch (error) {
+                console.log(error);
+            }
+        } else {
+            alert("Please Connect wallet First.")
         }
     }
 
-console.log(network,"qqqqqqqqqqqqqqqqqq");
+console.log(showAddress,"qqqqqqqqqqqqqqqqqq");
 
   return (
     <div>
@@ -225,7 +228,8 @@ console.log(network,"qqqqqqqqqqqqqqqqqq");
         <h4>Balance: {showBalance}</h4>
 		<h4> {tokenName + " Balance"}: {tokenBalance} </h4>
         <br/><br/>
-        
+
+        {/* Approve Section */}
         <form onSubmit={approveTransc}>
             <h4>Allow Recipient address to transact on my behalf </h4>
             <label>Enter the Recipient Address: </label>
@@ -236,8 +240,9 @@ console.log(network,"qqqqqqqqqqqqqqqqqq");
         </form>
         <br/><br/>
 
+        {/* TransferFrom Section */}
         <form onSubmit={transferFrom}>
-            <h3>Transfer Functionality</h3>
+            <h3>Transfer From Functionality</h3>
             <label>Enter sender Address: </label>
             <input type="text" id="senderAdd" placeholder='Sender Address' /><br/><br/>
             <label>Enter the Recipient Address: </label>
@@ -247,7 +252,9 @@ console.log(network,"qqqqqqqqqqqqqqqqqq");
             <button type='submit'>Transfer</button>
         </form>
         <br/><br/>
- 
+
+        {/* Simple transfer section */}
+        <h3>Simple Transfer (ETH/Token)</h3>
         <h1> {option}</h1>
         <select 
         name="Choose"
@@ -255,22 +262,18 @@ console.log(network,"qqqqqqqqqqqqqqqqqq");
             <option value="">select</option>
             <option value="Token">Token</option>
             <option value="Ethereum">Ethereum</option>
-
         </select><br/><br/>
-        {/* <button onClick={approveTransc}>Approve</button> */}
 
+        <form onSubmit={transferEthToken}>
+			<p> Reciever Address </p>
+			<input type='text' id='recieverAddress'/>
 
+			<p> Send Amount </p>
+			<input type='number' id='sendAmount' />
 
-            <form onSubmit={transferEthToken}>
-						<p> Reciever Address </p>
-						<input type='text' id='recieverAddress'/>
-
-						<p> Send Amount </p>
-						<input type='number' id='sendAmount' />
-
-						<button type='submit' >Send</button>
-                        <h4>Hash : {hash}</h4>
-			</form>
+			<button type='submit' >Send</button>
+            <h4>Hash : {hash}</h4>
+		</form>
     </div>
   )
 }

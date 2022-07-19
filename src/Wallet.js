@@ -4,13 +4,13 @@ import { useState } from 'react';
 import Web3 from 'web3';
 import TokenAbi from "./ABI/Token_Abi.json";
 import TokenAbi1 from "./ABI/Token_Abi1.json";
+import { ethers } from 'ethers';
 
 const Wallet = () => {
     let web3;
     const { ethereum } = window
     web3 = new Web3(ethereum)
     
-    const address = "0x765ae9DdF72b5614Db50E6DEd2c4706114141f4d";
     const TokenAddress1 = "0x995765e120676263764aB14781Abe228a7EDd015";
     const TokenAddress2 = "0xB8B1fF9d62eb8dcbB98bC7B8D006b8f5F873f5a3";
 
@@ -207,7 +207,6 @@ const Wallet = () => {
         }
     }
 
-console.log(showAddress,"qqqqqqqqqqqqqqqqqq");
 
   return (
     <div>

@@ -5,12 +5,12 @@ import Web3 from 'web3';
 import TokenAbi from "./ABI/Token_Abi.json";
 import TokenAbi1 from "./ABI/Token_Abi1.json";
 import { ethers } from 'ethers';
+import WalletConnectProvider from "@walletconnect/web3-provider";
 
 const Wallet = () => {
     let web3;
     const { ethereum } = window
-    web3 = new Web3(ethereum)
-    
+
     const TokenAddress1 = "0x995765e120676263764aB14781Abe228a7EDd015";
     const TokenAddress2 = "0xB8B1fF9d62eb8dcbB98bC7B8D006b8f5F873f5a3";
 
@@ -28,14 +28,28 @@ const Wallet = () => {
     const [recipientAddresss, setRecipientAddress] = useState("");
 
 
+    //  Create WalletConnect Provider
+    // const provider = new WalletConnectProvider({
+    // infuraId: "27e484dcd9e3efcfd25a83a78777cdf1",
+    // });
+
+    const provider = new WalletConnectProvider({
+        rpc: {
+        //   1: "https://mainnet.mycustomnode.com",
+          3: "wss://ropsten.mycustomnode.com",
+        //   100: "https://dai.poa.network",
+        },
+      });
+
+    web3 = new Web3(ethereum )
+
     const connectMetamask = async () => {
         console.log("web3",web3);
         console.log(window.ethereum.chainId,ethereum.selectedAddress, 'window.ethereum.networkVersion');
-        
-        // if(metaMaskNetwork===""){
-        //     alert("choose network")
-        //     return
-        // }
+    
+        //  Enable session (triggers QR Code modal)
+        await provider.enable();
+
 
         if(window.ethereum.networkVersion===1)
         {
@@ -49,6 +63,10 @@ const Wallet = () => {
         const accounts = await ethereum.request({
             method: "eth_requestAccounts"
         })
+
+        
+
+
         if(ethereum.chainId === "0x1" ){
             await window.ethereum.request({ 
                 method: 'wallet_switchEthereumChain', 
@@ -73,6 +91,12 @@ const Wallet = () => {
         setButtonConnection("Wallet Connected");
         console.log("accounts",accounts);
         setAddress(accounts[0])
+
+        // Subscribe to accounts change
+        provider.on("accountsChanged", (accounts) => {
+            console.log("aaaaaaaaaaaaaaaaaaaaaaa",accounts);
+        });
+
         console.log('What chain: ', window.ethereum.chainId);
         console.log(showAddress,"qqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
 
@@ -80,6 +104,7 @@ const Wallet = () => {
         console.log("balance",balance/10**18);
         const balancee = balance/10**18;
         setBalance(balancee);
+        
         // Get ERC20 Token contract instance
         let contract = new web3.eth.Contract(TokenAbi,TokenAddress1);
         console.log("contract",contract);
@@ -111,7 +136,7 @@ const Wallet = () => {
     const changeNetwork = async() => {
         await window.ethereum.request({ 
                 method: 'wallet_switchEthereumChain', 
-                params: [{ chainId: '0x1' }],
+                params: [{ chainId: '0x3' }],
             });
             setTokenName("Token");
             setTokenBalance(0);
@@ -207,6 +232,19 @@ const Wallet = () => {
         }
     }
 
+    const disconnect = async() => {
+        console.log("Hit");
+        await ethereum.on('disconnect', (res)=>{
+console.log("kkkkkkkkkkkk",res);
+        })
+
+        // await ethereum.on('disconnect', () => {
+        //     console.log("aaaaaaaaaaaaaaaaa",ethereum.isConnected());
+
+        // })
+
+        
+    }
 
   return (
     <div>
@@ -226,6 +264,7 @@ const Wallet = () => {
         <h4>Wallet Address : {showAddress}</h4>
         <h4>Balance: {showBalance}</h4>
 		<h4> {tokenName + " Balance"}: {tokenBalance} </h4>
+        <button onClick={disconnect}>Disconnect</button>
         <br/><br/>
 
         {/* Approve Section */}

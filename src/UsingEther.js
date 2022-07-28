@@ -11,12 +11,12 @@ const UsingEther = () => {
   const { ethereum } = window;
   web3 = new Web3(ethereum);
 
-  const TokenAddress1 = "0x995765e120676263764aB14781Abe228a7EDd015";
   const TokenAddress2 = "0xB8B1fF9d62eb8dcbB98bC7B8D006b8f5F873f5a3";
 
   const [isConnected, setIsConnected] = useState("Connect Wallet");
   const [networkConnected, setNetworkConnected] = useState("");
   const [address, setAddress] = useState(null);
+  const [contractt, setContractt] = useState("");
   const [ethBalance, setEthBalance] = useState("");
   const [tokenName, setTokenName] = useState("");
   const [tokenBalance, setTokenBalance] = useState("");
@@ -39,7 +39,6 @@ const UsingEther = () => {
 
     if (network.chainId == "1") {
       setNetworkConnected("Mainnet");
-      console.log("Mainnet");
       setTokenBalance(0);
     } else if (network.chainId == "3") {
       setNetworkConnected("Ropsten Testnet");
@@ -50,7 +49,11 @@ const UsingEther = () => {
 
     //Balance
     const balance = await provider.getBalance(accounts[0]);
-    const balance_one = (balance / 10 ** 18).toString();
+
+    // Often you need to format the output to something more user-friendly,
+   // such as in ether (instead of wei)
+    const balance_one = ethers.utils.formatEther(balance)
+    // const balance_one = (balance / 10 ** 18).toString();
     console.log("Ethereum Balance::", balance_one);
     setEthBalance(balance_one);
 
@@ -59,8 +62,14 @@ const UsingEther = () => {
 
     // console.log("Contract::",contract)
 
+    // Look up the current block number
+    const blocknumber = await provider.getBlockNumber();
+    console.log("Block Number::",blocknumber);
+
     //Set Token Name
     const t_Name = await contract.name();
+    const t_Symbol = await contract.symbol();
+    console.log("Token Symbol>>",t_Symbol);
     setTokenName(t_Name);
     console.log("Name", t_Name);
 
@@ -89,28 +98,23 @@ const UsingEther = () => {
 
   const transferEthToken = async (e) => {
     if (isConnected == "Wallet Connected") {
-      console.log("HIT");
       e.preventDefault(); //prevent page reloading
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      // const provider = new ethers.providers.JsonRpcProvider()
       const signer = provider.getSigner();
 
       //Create a contract instance
       const contract = new ethers.Contract(TokenAddress2, TokenAbi1, signer);
 
-      console.log(contract);
+      // console.log(contract);
 
-      let transferAmount = e.target.sendAmount.value * 10 ** 18;
+      let transferAmount = e.target.sendAmount.value*10**18;
       let tranfer_amt = transferAmount.toString();
 
-      let recieverAddress = e.target.recieverAddress.value;
-      const privateKey =
-        "30f6f8e9d63ca92a75b34c868c5022a2c935bec2110efa4112057aad5f70dc48";
-      const wallet = new ethers.Wallet(privateKey, provider);
+      let recieverAddress = e.target.recieverAddress.value.trim();
 
-      console.log("transferAmount:", provider);
+      // console.log("transferAmount:", provider);
 
-      console.log("contqwertyuiract", recieverAddress);
+      // console.log("contqwertyuiract", recieverAddress);
 
       if (option == "Token") {
         try {
@@ -120,21 +124,48 @@ const UsingEther = () => {
               console.log(result);
               setHash(result.hash);
             });
+
+            // Receive an event when ANY transfer occurs
+            contract.on("Transfer", (to, amount, from) => {
+              alert(`${ from } sent ${ amount } to ${ to}`);
+          });
+
         } catch (error) {
           console.log(error);
         }
       } else if (option == "Ethereum") {
         try {
+        
+           const txHash = await signer.sendTransaction({
+             to: recieverAddress, 
+             value: tranfer_amt,
+            });
+         
+            const r = await provider.waitForTransaction(txHash.hash);
+            console.log('finalised..', r);
+            setHash(r.blockHash)
+          
+          // const val = ethers.utils.parseEther("0.1").toString();
+          // const gp = await provider.getGasPrice();
+
+          // const d = await provider.getFeeData();
+          // console.log("uuuuuuuuu",Object.keys(d).reduce((a,b) => {
+          //   a[b] = d[b].toString(); return a; 
+          // }, {}));
+          // let txObj = {
+          //   to: `${recieverAddress}`,
+          //   value: val,
+          //   from: `${address[0]}`
+
+          
           //Send Ether
-          const tx = await wallet.sendTransaction({
-            to: recieverAddress,
-            value: ethers.utils.parseEther("1"),
-          });
+          // console.log('ethereum', address, val, gp.toString());
+          // const gas = await provider.estimateGas(txObj);
+          // txObj['gas'] = gas.toBigInt().toString();
+          // console.log('gas', txObj['gas'])
+          // const tx = await provider.send('eth_sendTransaction', [txObj]);
 
-          console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", tx);
-          //wait for transaction to be mined
-
-          await tx.wait();
+          
         } catch (error) {
           console.log(error);
         }
@@ -152,7 +183,7 @@ const UsingEther = () => {
 
       //Create a contract instance
       const contract = new ethers.Contract(TokenAddress2, TokenAbi1, signer);
-      console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv", contract);
+      // console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv", contract);
       let recipientAddress = e.target.recipientAddress.value;
       // setRecipientAddress(recipientAddress);
       let amount = e.target.amount.value * 10 ** 18;
@@ -178,13 +209,11 @@ const UsingEther = () => {
       const signer = provider.getSigner();
       //Create a contract instance
       const contract = new ethers.Contract(TokenAddress2, TokenAbi1, signer);
-      console.log(contract)
       let senderaddress = e.target.senderAdd.value;
       let recipientAddress = e.target.recipientAddress.value;
       let amount = e.target.amount.value * 10 ** 18;
       let amt = amount.toString();
       try {
-        console.log("TRY");
         await contract
           .transferFrom(senderaddress, recipientAddress, amt)
           // .send({ from: address })
@@ -226,7 +255,7 @@ const UsingEther = () => {
       <br />
       <br />
 
-      {/* Approve Section */}
+       {/* Approve Section */}
       <form onSubmit={approveTransc}>
         <h4>Allow Recipient address to transact on my behalf </h4>
         <label>Enter the Recipient Address: </label>
@@ -244,7 +273,7 @@ const UsingEther = () => {
         <button type="submit">Approve</button>
       </form>
       <br />
-      <br />
+      <br /> 
 
       {/* TransferFrom Section */}
       <form onSubmit={transferFroom}>
@@ -262,7 +291,7 @@ const UsingEther = () => {
         <br />
         <br />
         <label>Enter Amount: </label>
-        <input type="number" id="amount" placeholder="Enter Amount"></input>
+        <input type="text" id="amount" placeholder="Enter Amount"></input>
         <br />
         <br />
         <button type="submit">Transfer</button>
@@ -286,7 +315,7 @@ const UsingEther = () => {
         <input type="text" id="recieverAddress" />
 
         <p> Send Amount </p>
-        <input type="number" id="sendAmount" />
+        <input type="text" id="sendAmount" />
 
         <button type="submit">Send</button>
         <h4>Hash : {hash}</h4>

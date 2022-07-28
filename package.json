@@ -3,14 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@biconomy/mexa": "^2.0.32",
+    "@binance-chain/bsc-connector": "^1.0.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "@walletconnect/web3-provider": "^1.7.8",
+    "eth-sig-util": "^3.0.1",
+    "ethereumjs-util": "^7.1.5",
     "ethers": "^5.6.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "4.0.3",
-    "web-vitals": "^2.1.4"
+    "solidity-sha3": "^0.4.1",
+    "wagmi": "^0.6.0",
+    "web-vitals": "^2.1.4",
+    "web3": "^1.7.4"
   },
   "scripts": {
     "start": "react-scripts start",
